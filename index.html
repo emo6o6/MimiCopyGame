@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>コード耳 — ギターコードの聴音</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%235c3a24'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23f4ecdf'/%3E%3C/svg%3E" />
+    <meta
+      name="description"
+      content="ギターのコードを聴いて、鍵盤でルートや構成音を探す耳コピ練習。正解と、半音いくつずれているかを返します。"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div class="brand">
+          <p class="eyebrow">ギターの聴音</p>
+          <h1>コード耳</h1>
+          <p class="lede">コードを聴いて、鍵盤で高さを探す。</p>
+        </div>
+        <div class="score">
+          <p id="stats" class="stats">まだ 0 問</p>
+          <div id="history" class="history" hidden></div>
+          <button id="reset" class="text-btn on-dark" type="button">記録を消す</button>
+        </div>
+      </header>
+
+      <section class="setup" aria-label="出題の設定">
+        <div class="field">
+          <span class="label" id="mode-label">当てる音</span>
+          <div class="segment" role="group" aria-labelledby="mode-label">
+            <button type="button" data-mode="root" aria-pressed="true">ルートだけ</button>
+            <button type="button" data-mode="tones" aria-pressed="false">構成音すべて</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label" id="difficulty-label">難易度</span>
+          <div class="segment" role="group" aria-labelledby="difficulty-label">
+            <button type="button" data-difficulty="easy" aria-pressed="true">かんたん</button>
+            <button type="button" data-difficulty="normal" aria-pressed="false">ふつう</button>
+            <button type="button" data-difficulty="hard" aria-pressed="false">むずかしい</button>
+          </div>
+          <p id="difficulty-hint" class="hint"></p>
+        </div>
+        <div class="field field-types">
+          <span class="label">出るコード</span>
+          <div id="types" class="chips"></div>
+          <p class="hint">選んだ種類は、次に鳴らすコードから使います。</p>
+        </div>
+      </section>
+
+      <main class="bench">
+        <section class="stage" aria-label="出題">
+          <div class="string-wave" id="wave" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="play-row">
+            <button id="play" class="play" type="button">
+              <span class="tri" aria-hidden="true"></span>
+              <span id="play-label">コードを聴く</span>
+            </button>
+            <button id="arp" class="ghost" type="button" hidden>一音ずつ</button>
+          </div>
+          <p id="prompt" class="prompt">出るコードを選んだら、コードを聴く。</p>
+          <div id="strings" class="strings" hidden></div>
+          <div class="heard">
+            <span>いま鍵盤で鳴らした音</span>
+            <strong id="heard">まだ鳴っていない</strong>
+          </div>
+          <div class="answer-row">
+            <span id="answer-label">答え</span>
+            <div id="picks" class="picks" aria-labelledby="answer-label"></div>
+            <button id="take" class="ghost" type="button" disabled>この音を入れる</button>
+          </div>
+          <div class="actions">
+            <button id="submit" class="submit" type="button" disabled>答える</button>
+            <button id="next" class="next" type="button" hidden>次のコード</button>
+            <button id="skip" class="text-btn" type="button" hidden>別のコード</button>
+          </div>
+          <div id="result" class="result" role="status" aria-live="polite" hidden></div>
+        </section>
+
+        <section class="keyboard" aria-label="鍵盤">
+          <div class="keys-head">
+            <div>
+              <span class="label" id="input-label">鍵盤の使い方</span>
+              <div class="segment" role="group" aria-labelledby="input-label">
+                <button type="button" data-input="play" aria-pressed="true">鳴らして探す</button>
+                <button type="button" data-input="pick" aria-pressed="false">押すと答えに入る</button>
+              </div>
+            </div>
+            <p id="input-hint" class="hint"></p>
+            <div class="octave-row">
+              <button id="oct-down" class="text-btn" type="button">ドを下げる</button>
+              <p id="octave-label" class="octave-label"></p>
+              <button id="oct-up" class="text-btn" type="button">ドを上げる</button>
+            </div>
+          </div>
+          <div class="piano-scroll">
+            <div id="piano" class="piano" data-reveal="yes"></div>
+          </div>
+          <p class="hint keys-foot">横にはみ出すときはスクロール。パソコンでは A の列がド、黒鍵は W E T Y U。← → でもオクターブを動かせます。スペースでもう一度聴く。</p>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./app.mjs"></script>
+  </body>
+</html>
