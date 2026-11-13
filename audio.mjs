@@ -14,22 +14,27 @@ function noiseBuffer(ctx) {
 export function createEngine() {
   let ctx = null;
   let master = null;
+  let volume = null;
   let buffer = null;
+  let level = 1;
 
   function ac() {
     if (!ctx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       ctx = new AudioCtx();
       master = ctx.createGain();
-      master.gain.value = 0.85;
+      master.gain.value = 1;
       const compressor = ctx.createDynamicsCompressor();
-      compressor.threshold.value = -16;
-      compressor.knee.value = 18;
-      compressor.ratio.value = 3.2;
-      compressor.attack.value = 0.004;
-      compressor.release.value = 0.22;
+      compressor.threshold.value = -14;
+      compressor.knee.value = 12;
+      compressor.ratio.value = 3;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.18;
+      volume = ctx.createGain();
+      volume.gain.value = level;
       master.connect(compressor);
-      compressor.connect(ctx.destination);
+      compressor.connect(volume);
+      volume.connect(ctx.destination);
       buffer = noiseBuffer(ctx);
     }
     if (ctx.state === "suspended") ctx.resume();
@@ -83,7 +88,7 @@ export function createEngine() {
     click.stop(when + 0.08);
   }
 
-  function piano(midi, when, { velocity = 0.2, duration = 1.35 } = {}) {
+  function piano(midi, when, { velocity = 0.72, duration = 1.85 } = {}) {
     const context = ac();
     const freq = midiToFreq(midi);
     const amp = context.createGain();
@@ -113,6 +118,11 @@ export function createEngine() {
 
   return {
     resume: ac,
+    setVolume(amount) {
+      level = Math.min(1, Math.max(0, amount));
+      if (!volume) return;
+      volume.gain.setTargetAtTime(level, ac().currentTime, 0.02);
+    },
     now() {
       return ac().currentTime;
     },
@@ -129,7 +139,7 @@ export function createEngine() {
     pianoChord(midis, when, gap = 0.018) {
       midis.forEach((midi, index) => {
         if (midi == null) return;
-        piano(midi, when + index * gap, { velocity: 0.16 });
+        piano(midi, when + index * gap, { velocity: 0.55 });
       });
     },
   };
