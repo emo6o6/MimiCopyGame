@@ -56,6 +56,7 @@ const state = {
   inputMode: "play",
   types: new Set(["major", "minor", "sus4"]),
   keyBase: 60,
+  volume: 100,
   question: null,
   phase: "idle",
   gradedMode: null,
@@ -88,6 +89,9 @@ function load() {
     }
     if (data.inputMode === "play" || data.inputMode === "pick") state.inputMode = data.inputMode;
     if (Number.isInteger(data.keyBase)) state.keyBase = Math.min(72, Math.max(36, data.keyBase));
+    if (typeof data.volume === "number" && data.volume >= 0 && data.volume <= 100) {
+      state.volume = Math.round(data.volume);
+    }
     if (Array.isArray(data.types)) {
       const ids = data.types.filter((id) => CHORD_TYPES.some((type) => type.id === id));
       if (ids.length) state.types = new Set(ids);
@@ -114,6 +118,7 @@ function save() {
         difficulty: state.difficulty,
         inputMode: state.inputMode,
         keyBase: state.keyBase,
+        volume: state.volume,
         types: [...state.types],
         stats: state.stats,
       }),
@@ -650,6 +655,21 @@ function renderOctave() {
   $("octave-label").textContent = `パソコン鍵盤のドは C${octave}`;
 }
 
+function renderVolume() {
+  const input = $("volume");
+  if (document.activeElement !== input) input.value = String(state.volume);
+  $("volume-readout").textContent = String(state.volume);
+}
+
+function applyVolume(amount, { preview = false } = {}) {
+  const next = Math.min(100, Math.max(0, Math.round(Number(amount))));
+  state.volume = next;
+  engine.setVolume(next / 100);
+  $("volume-readout").textContent = String(next);
+  save();
+  if (preview) engine.piano(state.lastMidi ?? 64, engine.now() + 0.02);
+}
+
 function renderResult() {
   const box = $("result");
   if (state.phase !== "answered" || !state.feedback || !state.question) {
@@ -679,6 +699,7 @@ function render() {
   renderStrings();
   renderKeys();
   renderOctave();
+  renderVolume();
   renderResult();
 }
 
@@ -775,8 +796,13 @@ function bind() {
     });
   }
 
+  const volume = $("volume");
+  volume.addEventListener("input", () => applyVolume(volume.value));
+  volume.addEventListener("change", () => applyVolume(volume.value, { preview: true }));
+
   document.addEventListener("keydown", (event) => {
     if (event.repeat) return;
+    if (event.target.closest("input, textarea, select")) return;
     if (event.code === "ArrowLeft") {
       event.preventDefault();
       shiftOctave(-1);
